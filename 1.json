@@ -1,0 +1,44 @@
+{
+    "name": "Storm Runner",
+    "description": "A dynamic and powerful horse with a flowing black mane captured mid-gallop. The background features abstract splashes of energy, emphasizing speed and strength.",
+    "image": "ipfs://your_image_cid_here",  // Replace with actual IPFS or server-hosted link
+    "attributes": [
+      {
+        "trait_type": "Breed",
+        "value": "Arabian"
+      },
+      {
+        "trait_type": "Color",
+        "value": "Dapple Gray"
+      },
+      {
+        "trait_type": "Temperament",
+        "value": "Energetic"
+      },
+      {
+        "trait_type": "Mane Style",
+        "value": "Flowing"
+      },
+      {
+        "trait_type": "Tack",
+        "value": "Black Leather Bridle"
+      },
+      {
+        "trait_type": "Speed",
+        "value": 95
+      },
+      {
+        "trait_type": "Strength",
+        "value": 88
+      },
+      {
+        "trait_type": "Rarity",
+        "value": "Legendary"
+      },
+      {
+        "trait_type": "Art Style",
+        "value": "Expressive Oil Painting"
+      }
+    ]
+  }
+  

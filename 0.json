@@ -1,0 +1,43 @@
+{
+  "name": "Majestic Stallion",
+  "description": "A strong and elegant gray stallion with a sleek mane, wearing a leather bridle. Rendered in oil-painting style with a realistic finish.",
+  "image": "ipfs://your_image_cid_here",  // Replace with actual IPFS or server link
+  "attributes": [
+    {
+      "trait_type": "Breed",
+      "value": "Thoroughbred"
+    },
+    {
+      "trait_type": "Color",
+      "value": "Gray"
+    },
+    {
+      "trait_type": "Temperament",
+      "value": "Calm"
+    },
+    {
+      "trait_type": "Mane Style",
+      "value": "Braided"
+    },
+    {
+      "trait_type": "Tack",
+      "value": "Leather Bridle"
+    },
+    {
+      "trait_type": "Speed",
+      "value": 87
+    },
+    {
+      "trait_type": "Strength",
+      "value": 91
+    },
+    {
+      "trait_type": "Rarity",
+      "value": "Epic"
+    },
+    {
+      "trait_type": "Art Style",
+      "value": "Oil Painting"
+    }
+  ]
+}
