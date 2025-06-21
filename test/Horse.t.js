@@ -135,6 +135,61 @@ describe("Horse", () => {
         contract.connect(addr1).transferNFTByValue(0, { value: price })
       ).to.emit(contract, "Transfer");
     });
+
+    it("should revert if non-owner calls withdraw", async () => {
+      await expect(contract.connect(addr1).withdraw()).to.be.reverted;
+    });
+  
+    it("should revert if contract balance is 0", async () => {
+      await expect(contract.withdraw()).to.be.revertedWith("No balance to withdraw");
+    });
+  
+    it("should allow owner to withdraw balance", async () => {
+      const depositAmount = ethers.parseEther("1");
+  
+      // Send ETH to contract
+      await addr1.sendTransaction({
+        to: contract.target,
+        value: depositAmount
+      });
+  
+      await expect(contract.withdraw()).to.changeEtherBalances(
+        [contract.target, owner.address],
+        [depositAmount * -1n, depositAmount]
+      );
+    });
+  
+    it("should emit TransferStatus event on successful withdrawal", async () => {
+      const depositAmount = ethers.parseEther("1");
+    
+      await addr1.sendTransaction({
+        to: contract.target,
+        value: depositAmount
+      });
+    
+      await expect(contract.withdraw())
+        .to.emit(contract, "TransferStatus")
+        .withArgs(true, "Withdrawal successful");
+    });
+
+    // Tests for the extra functions
+
+    it("should trigger fallback function when ETH is sent with unknown data", async () => {
+      const fallbackTx = {
+        to: contract.target, // Address of deployed contract
+        data: "0x12345678",  // Random data — no matching function selector
+        value: ethers.parseEther("0.5") // Sending ETH
+      };
+    
+      const before = await ethers.provider.getBalance(contract.target);
+    
+      await addr1.sendTransaction(fallbackTx);
+    
+      const after = await ethers.provider.getBalance(contract.target);
+    
+      expect(after - before).to.equal(ethers.parseEther("0.5"));
+    });
+    
     
   });
 });

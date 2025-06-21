@@ -1,0 +1,32 @@
+{
+    "name": "Appaloosa",
+    "description": "A majestic spotted stallion with a flowing blonde mane, known for its unique coat and proud stance.",
+    "image": "ipfs://bafybeievpzltmbjoivqyoqzw4mdcyuz56m5ixiwzanld6rveoiqlagg2xu/2.jpg",
+    "attributes": [
+      {
+        "trait_type": "Breed",
+        "value": "Appaloosa"
+      },
+      {
+        "trait_type": "Coat Pattern",
+        "value": "Spotted"
+      },
+      {
+        "trait_type": "Mane Color",
+        "value": "Blonde"
+      },
+      {
+        "trait_type": "Speed",
+        "value": 82
+      },
+      {
+        "trait_type": "Strength",
+        "value": 76
+      },
+      {
+        "trait_type": "Rarity",
+        "value": "Epic"
+      }
+    ]
+  }
+  

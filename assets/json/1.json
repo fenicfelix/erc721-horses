@@ -1,7 +1,7 @@
 {
-    "name": "Storm Runner",
+    "name": "Arabian",
     "description": "A dynamic and powerful horse with a flowing black mane captured mid-gallop. The background features abstract splashes of energy, emphasizing speed and strength.",
-    "image": "ipfs://your_image_cid_here",  // Replace with actual IPFS or server-hosted link
+    "image": "ipfs://bafybeievpzltmbjoivqyoqzw4mdcyuz56m5ixiwzanld6rveoiqlagg2xu/1.jpg",
     "attributes": [
       {
         "trait_type": "Breed",

@@ -1,0 +1,36 @@
+{
+    "name": "Quarter Horse",
+    "description": "A strong and harmonious pair of chestnut Quarter Horses standing side-by-side, embodying speed, loyalty, and perfect symmetry.",
+    "image": "ipfs://bafybeievpzltmbjoivqyoqzw4mdcyuz56m5ixiwzanld6rveoiqlagg2xu/4.jpg",
+    "attributes": [
+      {
+        "trait_type": "Breed",
+        "value": "Quarter Horse"
+      },
+      {
+        "trait_type": "Coat Color",
+        "value": "Chestnut"
+      },
+      {
+        "trait_type": "Mane Color",
+        "value": "Black and Auburn"
+      },
+      {
+        "trait_type": "Speed",
+        "value": 85
+      },
+      {
+        "trait_type": "Strength",
+        "value": 90
+      },
+      {
+        "trait_type": "Rarity",
+        "value": "Epic"
+      },
+      {
+        "trait_type": "Bond",
+        "value": "Twin Pair"
+      }
+    ]
+  }
+  

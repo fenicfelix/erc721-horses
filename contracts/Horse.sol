@@ -16,6 +16,18 @@ contract Horse is ERC721, Ownable {
         tokenID = 0;
     }
 
+    modifier noReentrant() {
+        require(!locked, "No re-entrancy allowed");
+        locked = true;
+        _;
+        locked = false;
+    }
+
+    // Existing state, constructor, etc...
+    receive() external payable noReentrant() {} // Accept plain ETH transfers (no function call data)
+
+    fallback() external payable {} // Optional: Accept ETH with data
+
     function mintNFT(address _to) public {
         _mint(_to, tokenID++);
     }
@@ -26,11 +38,6 @@ contract Horse is ERC721, Ownable {
 
     function getPrice(uint256 _tID) public view returns (uint256) {
         return priceList[_tID];
-    }
-
-    function burnNFT(uint256 _tID) public {
-        require(ownerOf(_tID) == msg.sender, "Only owner can burn NFT");
-        _burn(_tID);
     }
 
     function transferNFTByValue(uint256 tokenId) public payable {
@@ -44,5 +51,22 @@ contract Horse is ERC721, Ownable {
         require(sent, "Transfer failed");
 
         safeTransferFrom(_owner, msg.sender, tokenId);
+    }
+
+    function burnNFT(uint256 _tID) public {
+        require(ownerOf(_tID) == msg.sender, "Only owner can burn NFT");
+        _burn(_tID);
+    }
+
+    function withdraw() external payable onlyOwner {
+        address owner = payable(_msgSender());
+        uint256 balance = address(this).balance;
+
+        // Ensure the contract has a balance to withdraw
+        require(balance > 0, "No balance to withdraw");
+        (bool withdrawn, ) = owner.call{value: balance}("");
+
+        require(withdrawn, "Withdrawal failed");
+        emit TransferStatus(withdrawn, "Withdrawal successful");
     }
 }
