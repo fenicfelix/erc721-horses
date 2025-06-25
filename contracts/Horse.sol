@@ -11,20 +11,14 @@ contract Horse is ERC721, Ownable {
 
     // create event to get transfer status
     event TransferStatus(bool success, string message);
+    event WithdrawalStatus(bool success, string message);
 
     constructor() ERC721("Horse", "HORSE") Ownable(msg.sender) {
         tokenID = 0;
     }
 
-    modifier noReentrant() {
-        require(!locked, "No re-entrancy allowed");
-        locked = true;
-        _;
-        locked = false;
-    }
-
     // Existing state, constructor, etc...
-    receive() external payable noReentrant() {} // Accept plain ETH transfers (no function call data)
+    receive() external payable {} // Accept plain ETH transfers (no function call data)
 
     fallback() external payable {} // Optional: Accept ETH with data
 
@@ -48,9 +42,11 @@ contract Horse is ERC721, Ownable {
 
         address payable _owner = payable(ownerOf(tokenId));
         (bool sent, ) = _owner.call{value: amount}("");
-        require(sent, "Transfer failed");
+        // require(sent, "Transfer failed");
 
         safeTransferFrom(_owner, msg.sender, tokenId);
+
+        emit TransferStatus(sent, "Transfer request completed");
     }
 
     function burnNFT(uint256 _tID) public {
@@ -66,7 +62,7 @@ contract Horse is ERC721, Ownable {
         require(balance > 0, "No balance to withdraw");
         (bool withdrawn, ) = owner.call{value: balance}("");
 
-        require(withdrawn, "Withdrawal failed");
-        emit TransferStatus(withdrawn, "Withdrawal successful");
+        // require(withdrawn, "Withdrawal failed");
+        emit WithdrawalStatus(withdrawn, "Withdrawal request completed");
     }
 }

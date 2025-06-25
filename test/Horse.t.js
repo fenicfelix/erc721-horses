@@ -159,7 +159,7 @@ describe("Horse", () => {
       );
     });
   
-    it("should emit TransferStatus event on successful withdrawal", async () => {
+    it("should emit WithdrawalStatus event on successful withdrawal", async () => {
       const depositAmount = ethers.parseEther("1");
     
       await addr1.sendTransaction({
@@ -168,8 +168,8 @@ describe("Horse", () => {
       });
     
       await expect(contract.withdraw())
-        .to.emit(contract, "TransferStatus")
-        .withArgs(true, "Withdrawal successful");
+        .to.emit(contract, "WithdrawalStatus")
+        .withArgs(true, "Withdrawal request completed");
     });
 
     // Tests for the extra functions
