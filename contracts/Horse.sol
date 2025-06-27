@@ -49,9 +49,9 @@ contract Horse is ERC721, Ownable {
         emit TransferStatus(sent, "Transfer request completed");
     }
 
-    function burnNFT(uint256 _tID) public {
-        require(ownerOf(_tID) == msg.sender, "Only owner can burn NFT");
-        _burn(_tID);
+    function burnNFT(uint256 _tokenID) public {
+        require(ownerOf(_tokenID) == msg.sender, "Only owner can burn NFT");
+        _burn(_tokenID);
     }
 
     function withdraw() external payable onlyOwner {
