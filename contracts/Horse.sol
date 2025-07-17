@@ -5,6 +5,7 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract Horse is ERC721, Ownable {
+    uint256 public MAXIMUM_HORSES = 10;
     mapping(uint256 => string) private _tokenURIs;
     mapping(uint256 => uint256) public priceList;
     uint256 public totalSupply;
@@ -24,9 +25,13 @@ contract Horse is ERC721, Ownable {
 
     fallback() external payable {} // Optional: Accept ETH with data
 
-    function mintNFT(address _to, string memory uri) public onlyOwner {
+    function mintNFT(address _to, string memory uri) public payable onlyOwner {
+        require(msg.value >= 0.01 ether, "Insufficient funds to mint NFT");
+        require(tokenID + 1 < MAXIMUM_HORSES, "Maximum horses reached");
+
         _mint(_to, tokenID);
         _tokenURIs[tokenID] = uri;
+
         tokenID++;
         totalSupply++;
     }
@@ -49,18 +54,12 @@ contract Horse is ERC721, Ownable {
         return _tokenURIs[tokenId];
     }
 
-    function transferNFTByValue(uint256 tokenId) public payable {
-        uint256 amount = msg.value;
-        uint256 required = priceList[tokenId];
-        require(amount >= required, "Transfer amount exceeds price");
-        require(msg.sender.balance >= amount, "Insufficient funds");
+    function transferNFT(address to, uint256 tokenId) external {
+        require(ownerOf(tokenId) == msg.sender, "Only owner can transfer NFT");
+        require(to != address(0), "Cannot transfer to zero address");
 
-        address payable _owner = payable(ownerOf(tokenId));
-        (bool sent, ) = _owner.call{value: amount}("");
-        // require(sent, "ETH Transfer failed");
-
-        safeTransferFrom(_owner, msg.sender, tokenId);
-        emit TransferStatus(sent, "Transfer request completed");
+        safeTransferFrom(msg.sender, to, tokenId);
+        emit TransferStatus(true, "Direct NFT transfer completed");
     }
 
     function getMyTokens(address _owner) external view returns (uint256[] memory) {
