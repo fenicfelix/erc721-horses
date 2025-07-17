@@ -88,34 +88,43 @@ describe("Horse Contract Full Functionality", function () {
   });
 
   describe("transferNFT", () => {
-    it("should allow the owner to transfer NFT directly", async () => {
-      await horse.mintNFT(owner.address, "ipfs://uri", { value: ethers.parseEther("0.01") });
-
-      await expect(horse.connect(owner).transferNFT(addr1.address, 0))
-        .to.emit(horse, "TransferStatus")
-        .withArgs(true, "Direct NFT transfer completed");
-
-      expect(await horse.ownerOf(0)).to.equal(addr1.address);
-    });
-
-    it("should revert if a non-owner tries to transfer", async () => {
-      await horse.mintNFT(addr1.address, "ipfs://uri", { value: ethers.parseEther("0.01") });
-
-      await expect(horse.connect(addr2).transferNFT(addr2.address, 0))
-        .to.be.revertedWith("Only owner can transfer NFT");
-    });
-
-    it("should revert if trying to transfer to zero address", async () => {
-      // Mint a token to addr1
-      await horse.connect(owner).mintNFT(addr1.address, "ipfs://zero-check", {
+    it("should transfer NFT and emit event if enough ETH sent", async () => {
+      // addr1 owns the token
+      await horse.connect(owner).mintNFT(addr1.address, "ipfs://uri", {
         value: ethers.parseEther("0.01"),
       });
 
-      // Connect as addr1 (the owner of tokenId 0)
+      // Set price
+      await horse.connect(addr1).setPrice(0, ethers.parseEther("1"));
+
+      // Approve addr2 to transfer token 0
+      await horse.connect(addr1).approve(addr2.address, 0);
+
+      // addr2 pays and transfers the NFT
       await expect(
-        horse.connect(addr1).transferNFT(ethers.ZeroAddress, 0)
-      ).to.be.revertedWith("Cannot transfer to zero address");
+        horse.connect(addr2).transferNFT(0, { value: ethers.parseEther("1") })
+      )
+        .to.emit(horse, "TransferStatus")
+        .withArgs(true, "Direct NFT transfer completed");
+
+      // Assert ownership
+      expect(await horse.ownerOf(0)).to.equal(addr2.address);
     });
+
+
+    it("should revert if insufficient ETH is sent", async () => {
+      await horse.connect(owner).mintNFT(addr1.address, "ipfs://uri", {
+        value: ethers.parseEther("0.01"),
+      });
+
+      await horse.connect(addr1).setPrice(0, ethers.parseEther("1"));
+
+      await expect(
+        horse.connect(addr2).transferNFT(0, { value: ethers.parseEther("0.5") })
+      ).to.be.revertedWith("Insufficient funds to transfer NFT");
+    });
+
+
   });
 
 

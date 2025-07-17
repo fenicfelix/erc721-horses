@@ -16,7 +16,7 @@ contract Horse is ERC721, Ownable {
     event TransferStatus(bool success, string message);
     event WithdrawalStatus(bool success, string message);
 
-    constructor() ERC721("Horse", "HRS") Ownable(msg.sender) {
+    constructor() ERC721("Horse", "HRS") Ownable(msg.sender) payable{
         tokenID = 0;
     }
 
@@ -54,12 +54,16 @@ contract Horse is ERC721, Ownable {
         return _tokenURIs[tokenId];
     }
 
-    function transferNFT(address to, uint256 tokenId) external {
-        require(ownerOf(tokenId) == msg.sender, "Only owner can transfer NFT");
-        require(to != address(0), "Cannot transfer to zero address");
+    function transferNFT(uint256 tokenId) payable external {
+        require(msg.value >= getPrice(tokenId), "Insufficient funds to transfer NFT");
+        address owner = payable (ownerOf(tokenId));
 
-        safeTransferFrom(msg.sender, to, tokenId);
-        emit TransferStatus(true, "Direct NFT transfer completed");
+        (bool status, ) = owner.call{value: msg.value}("");
+        // require(status, "Transfer failed");
+
+        // Transfer ownership of the NFT
+        safeTransferFrom(owner, _msgSender(), tokenId);
+        emit TransferStatus(status, "Direct NFT transfer completed");
     }
 
     function getMyTokens(address _owner) external view returns (uint256[] memory) {
@@ -86,9 +90,15 @@ contract Horse is ERC721, Ownable {
 
         // Ensure the contract has a balance to withdraw
         require(balance > 0, "No balance to withdraw");
-        (bool withdrawn, ) = owner.call{value: balance}("");
+        (bool status, ) = owner.call{value: balance}("");
 
         // require(withdrawn, "Withdrawal failed");
-        emit WithdrawalStatus(withdrawn, "Withdrawal request completed");
+        emit WithdrawalStatus(status, "Withdrawal request completed");
     }
 }
+
+// 0x5B38Da6a701c568545dCfcB03FcB875f56beddC4 -- Address 1 (Owner)
+// 0xAb8483F64d9C6d1EcF9b849Ae677dD3315835cb2 -- Address 2 (Bettor1)
+// 0x4B20993Bc481177ec7E8f571ceCaE8A9e22C02db -- Address 3 (Bettor2)
+// ipfs://bafybeie4eqm7zgcp5ffgxvgf6xtgpdozsmexlecjmj2lcjcjw2x2rekune/ - path
+// ipfs://bafybeie4eqm7zgcp5ffgxvgf6xtgpdozsmexlecjmj2lcjcjw2x2rekune/0.json - full url
