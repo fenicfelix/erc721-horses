@@ -1,0 +1,35 @@
+{
+  "name": "Embermane",
+  "description": "A majestic Gypsy Vanner with a luxurious feathered coat and flowing mane, radiating charm, grace, and strength.",
+  "image": "ipfs://bafybeigypsyvannerimagehash/5.jpg",
+  "attributes": [
+    {
+      "trait_type": "Breed",
+      "value": "Gypsy Vanner"
+    },
+    {
+      "trait_type": "Coat Color",
+      "value": "Piebald"
+    },
+    {
+      "trait_type": "Mane Color",
+      "value": "White with Black Streaks"
+    },
+    {
+      "trait_type": "Speed",
+      "value": 70
+    },
+    {
+      "trait_type": "Strength",
+      "value": 95
+    },
+    {
+      "trait_type": "Rarity",
+      "value": "Rare"
+    },
+    {
+      "trait_type": "Temperament",
+      "value": "Calm and Loyal"
+    }
+  ]
+}

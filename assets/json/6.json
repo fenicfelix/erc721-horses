@@ -1,0 +1,35 @@
+{
+  "name": "Nightshade",
+  "description": "A regal black Friesian horse with flowing mane and arched neck, exuding elegance, heritage, and silent power.",
+  "image": "ipfs://bafybeifriesianimagehash/8.jpg",
+  "attributes": [
+    {
+      "trait_type": "Breed",
+      "value": "Friesian"
+    },
+    {
+      "trait_type": "Coat Color",
+      "value": "Pure Black"
+    },
+    {
+      "trait_type": "Mane Color",
+      "value": "Silky Black"
+    },
+    {
+      "trait_type": "Speed",
+      "value": 75
+    },
+    {
+      "trait_type": "Strength",
+      "value": 88
+    },
+    {
+      "trait_type": "Rarity",
+      "value": "Legendary"
+    },
+    {
+      "trait_type": "Temperament",
+      "value": "Graceful and Noble"
+    }
+  ]
+}

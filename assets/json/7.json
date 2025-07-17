@@ -1,0 +1,35 @@
+{
+  "name": "Stormhoof",
+  "description": "A majestic Clydesdale with powerful build and flowing feathered legs, exuding strength, tradition, and grace.",
+  "image": "ipfs://bafybeiclydesdaleimagehash/7.jpg",
+  "attributes": [
+    {
+      "trait_type": "Breed",
+      "value": "Clydesdale"
+    },
+    {
+      "trait_type": "Coat Color",
+      "value": "Bay with White Markings"
+    },
+    {
+      "trait_type": "Mane Color",
+      "value": "Black and White"
+    },
+    {
+      "trait_type": "Speed",
+      "value": 65
+    },
+    {
+      "trait_type": "Strength",
+      "value": 98
+    },
+    {
+      "trait_type": "Rarity",
+      "value": "Rare"
+    },
+    {
+      "trait_type": "Temperament",
+      "value": "Calm and Steady"
+    }
+  ]
+}

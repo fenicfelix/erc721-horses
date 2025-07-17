@@ -1,0 +1,35 @@
+{
+  "name": "Celestia",
+  "description": "A majestic Andalusian horse with a pearlescent gray coat and an expressive gaze, showcasing elegance, agility, and historical grandeur.",
+  "image": "ipfs://bafybeialandalusianimagehash/10.jpg",
+  "attributes": [
+    {
+      "trait_type": "Breed",
+      "value": "Andalusian"
+    },
+    {
+      "trait_type": "Coat Color",
+      "value": "Pearl Gray"
+    },
+    {
+      "trait_type": "Mane Color",
+      "value": "Silver and White"
+    },
+    {
+      "trait_type": "Speed",
+      "value": 78
+    },
+    {
+      "trait_type": "Strength",
+      "value": 85
+    },
+    {
+      "trait_type": "Rarity",
+      "value": "Rare"
+    },
+    {
+      "trait_type": "Temperament",
+      "value": "Noble and Spirited"
+    }
+  ]
+}

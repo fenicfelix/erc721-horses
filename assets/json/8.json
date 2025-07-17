@@ -1,0 +1,35 @@
+{
+  "name": "Silverwind",
+  "description": "An elegant and refined Akhal-Teke with a metallic golden sheen, known for its endurance, intelligence, and rare beauty.",
+  "image": "ipfs://bafybeiakhaltekeimagehash/6.jpg",
+  "attributes": [
+    {
+      "trait_type": "Breed",
+      "value": "Akhal-Teke"
+    },
+    {
+      "trait_type": "Coat Color",
+      "value": "Golden Buckskin"
+    },
+    {
+      "trait_type": "Mane Color",
+      "value": "Pale Gold"
+    },
+    {
+      "trait_type": "Speed",
+      "value": 92
+    },
+    {
+      "trait_type": "Strength",
+      "value": 80
+    },
+    {
+      "trait_type": "Rarity",
+      "value": "Legendary"
+    },
+    {
+      "trait_type": "Temperament",
+      "value": "Intelligent and Spirited"
+    }
+  ]
+}

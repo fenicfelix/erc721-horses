@@ -5,15 +5,17 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract Horse is ERC721, Ownable {
-    uint256 public tokenID;
+    mapping(uint256 => string) private _tokenURIs;
     mapping(uint256 => uint256) public priceList;
+    uint256 public totalSupply;
+    uint256 public tokenID;
     bool internal locked;
 
     // create event to get transfer status
     event TransferStatus(bool success, string message);
     event WithdrawalStatus(bool success, string message);
 
-    constructor() ERC721("Horse", "HORSE") Ownable(msg.sender) {
+    constructor() ERC721("Horse", "HRS") Ownable(msg.sender) {
         tokenID = 0;
     }
 
@@ -22,8 +24,11 @@ contract Horse is ERC721, Ownable {
 
     fallback() external payable {} // Optional: Accept ETH with data
 
-    function mintNFT(address _to) public {
-        _mint(_to, tokenID++);
+    function mintNFT(address _to, string memory uri) public onlyOwner {
+        _mint(_to, tokenID);
+        _tokenURIs[tokenID] = uri;
+        tokenID++;
+        totalSupply++;
     }
 
     function setPrice(uint256 _tID, uint256 _price) public {
@@ -32,6 +37,16 @@ contract Horse is ERC721, Ownable {
 
     function getPrice(uint256 _tID) public view returns (uint256) {
         return priceList[_tID];
+    }
+    
+    function setTokenURI(uint256 tokenId, string memory _uri) public {
+        require(ownerOf(tokenId) == msg.sender, "Only owner can set token URI");
+        _tokenURIs[tokenId] = _uri;
+    }
+
+    function tokenURI(uint256 tokenId) public view override returns (string memory) {
+        // require(_exists(tokenId), "ERC721Metadata: URI query for nonexistent token");
+        return _tokenURIs[tokenId];
     }
 
     function transferNFTByValue(uint256 tokenId) public payable {
@@ -42,12 +57,24 @@ contract Horse is ERC721, Ownable {
 
         address payable _owner = payable(ownerOf(tokenId));
         (bool sent, ) = _owner.call{value: amount}("");
-        // require(sent, "Transfer failed");
+        // require(sent, "ETH Transfer failed");
 
         safeTransferFrom(_owner, msg.sender, tokenId);
-
         emit TransferStatus(sent, "Transfer request completed");
     }
+
+    function getMyTokens(address _owner) external view returns (uint256[] memory) {
+        uint256 count = balanceOf(_owner);
+        uint256[] memory result = new uint256[](count);
+        uint256 index = 0;
+        for (uint256 i = 0; i < tokenID; i++) {
+            if (ownerOf(i) == _owner) {
+                result[index++] = i;
+            }
+        }
+        return result;
+    }
+
 
     function burnNFT(uint256 _tokenID) public {
         require(ownerOf(_tokenID) == msg.sender, "Only owner can burn NFT");

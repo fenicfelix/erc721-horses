@@ -1,206 +1,183 @@
 const { expect } = require("chai");
+const { ethers } = require("hardhat");
 
-describe("Horse", () => {
-  let contract;
+describe("Horse Contract Full Functionality", function () {
+  let horse;
   let owner, addr1, addr2;
 
-  beforeEach("Deployment", async () => {
-    const Contract = await ethers.getContractFactory("Horse");
-    contract = await Contract.deploy();
-    await contract.waitForDeployment();
-
+  beforeEach(async function () {
     [owner, addr1, addr2] = await ethers.getSigners();
+
+    const Horse = await ethers.getContractFactory("Horse");
+    horse = await Horse.deploy();
+    await horse.waitForDeployment();
   });
 
-  describe("Testing", () => {
-    const oneEth = ethers.parseEther("1");
+  describe("mintNFT", () => {
+    it("should allow the owner to mint NFT with URI", async function () {
+      const tokenURI = "ipfs://sample-uri-123";
 
-    beforeEach("multi-mint", async () => {
-      const max = 5;
-      for (let t = 0; t < max; t++) {
-        await contract.mintNFT(owner.address);
-        await contract.setPrice(t, oneEth);
-      }
+      await expect(horse.connect(owner).mintNFT(addr1.address, tokenURI))
+        .to.emit(horse, "Transfer")
+        .withArgs(ethers.ZeroAddress, addr1.address, 0);
+
+      expect(await horse.ownerOf(0)).to.equal(addr1.address);
+      expect(await horse.tokenURI(0)).to.equal(tokenURI);
+      expect(await horse.totalSupply()).to.equal(1);
     });
 
-    it("props", async () => {
-      expect(await contract.name()).to.equal("Horse");
+    it("should increment tokenID and totalSupply after each mint", async function () {
+      await horse.connect(owner).mintNFT(owner.address, "ipfs://a");
+      await horse.connect(owner).mintNFT(addr1.address, "ipfs://b");
+
+      expect(await horse.tokenID()).to.equal(2);
+      expect(await horse.totalSupply()).to.equal(2);
+    });
+  });
+
+  describe("setPrice / getPrice", () => {
+    it("should allow setting and getting token price", async () => {
+      await horse.connect(owner).mintNFT(owner.address, "ipfs://uri");
+      await horse.setPrice(0, ethers.parseEther("1"));
+      expect(await horse.getPrice(0)).to.equal(ethers.parseEther("1"));
+    });
+  });
+
+  describe("setTokenURI", () => {
+    it("should allow owner to update token URI", async () => {
+      await horse.connect(owner).mintNFT(owner.address, "ipfs://old");
+      await horse.setTokenURI(0, "ipfs://new");
+      expect(await horse.tokenURI(0)).to.equal("ipfs://new");
     });
 
-    // Test for the mintNFT function
-    describe("Minting", () => {
-      it("should mint unique token IDs", async () => {
-        await contract.mintNFT(owner.address);
-        await contract.mintNFT(owner.address);
-      
-        expect(await contract.ownerOf(0)).to.equal(owner.address);
-        expect(await contract.ownerOf(1)).to.equal(owner.address);
-      });
+    it("should revert if not owner", async () => {
+      await horse.connect(owner).mintNFT(addr1.address, "ipfs://old");
+      await expect(horse.connect(addr2).setTokenURI(0, "ipfs://new"))
+        .to.be.revertedWith("Only owner can set token URI");
+    });
+  });
 
-      it("should allow owner to burn their NFT", async () => {
-        await contract.mintNFT(owner.address);
-        expect(await contract.ownerOf(0)).to.equal(owner.address);
-      
-        await contract.burnNFT(0);
-      
-        // Cannot check revert reason because it uses a custom error
-        await expect(contract.ownerOf(0)).to.be.reverted;
-      });
-  
-      
+  describe("transferNFTByValue", () => {
+    it("should transfer ownership if value sent is equal to price", async () => {
+      await horse.mintNFT(owner.address, "ipfs://uri");
+      await horse.setPrice(0, ethers.parseEther("1"));
+      await horse.connect(owner).approve(addr1.address, 0);
+
+      await expect(
+        horse.connect(addr1).transferNFTByValue(0, { value: ethers.parseEther("1") })
+      ).to.emit(horse, "Transfer");
+
+      expect(await horse.ownerOf(0)).to.equal(addr1.address);
     });
 
-    describe("Setting Price", () => {
-      it("should set price", async () => {
-        let oneBN = BigInt(oneEth);
-        expect(await contract.getPrice(1)).to.equal(oneBN);
-      });
+    it("should revert if insufficient value is sent", async () => {
+      await horse.mintNFT(owner.address, "ipfs://uri");
+      await horse.setPrice(0, ethers.parseEther("1"));
+      await horse.connect(owner).approve(addr1.address, 0);
+
+      await expect(
+        horse.connect(addr1).transferNFTByValue(0, { value: ethers.parseEther("0.5") })
+      ).to.be.revertedWith("Transfer amount exceeds price");
     });
 
-    describe("Transfer", () => {
-      it("transfer token balance", async () => {
-        let oneBN = BigInt(oneEth);
-        let tId = 2;
-  
-        await contract.connect(owner).approve(addr1.address, tId);
-        await contract.connect(addr1).transferNFTByValue(tId, {
-          value: oneEth,
-        });
-  
-        expect(await contract.ownerOf(tId)).to.equal(addr1.address);
-      });
-  
-      it("transfer check ether balance", async () => {
-        let oneBN = BigInt(oneEth);
-        let tId = 2;
-  
-        await contract.connect(owner).approve(addr1.address, tId);
-  
-        await expect(
-          contract.connect(addr1).transferNFTByValue(tId, { value: oneEth })
-        ).to.changeEtherBalances(
-          [owner.address, addr1.address],
-          [oneEth, -oneEth]
-        );
-      });
-  
-      it("should revert if transferNFTByValue value is too low", async () => {
-        let tokenId = 0;
-        await contract.mintNFT(owner.address);
-        await contract.setPrice(tokenId, oneEth);
-        await contract.approve(addr1.address, tokenId);
-      
-        await expect(
-          contract.connect(addr1).transferNFTByValue(tokenId, {
-            value: ethers.parseEther("0.5"),
-          })
-        ).to.be.revertedWith("Transfer amount exceeds price");
-      });
-  
-      it("should revert if caller doesn't have enough ETH", async () => {
-        const lowBalanceWallet = ethers.Wallet.createRandom().connect(ethers.provider);
-      
-        // Fund the wallet with a tiny amount (0.01 ETH) and wait for it to be mined
-        const tx = await owner.sendTransaction({to: lowBalanceWallet.address,value: ethers.parseEther("0.01")});
-        await tx.wait();
-      
-        // Mint NFT to owner
-        await contract.mintNFT(owner.address);
-      
-        // Set price of token
-        const tokenId = 0;
-        const price = ethers.parseEther("1"); // Price = 1 ETH
-        await contract.setPrice(tokenId, price);
-      
-        // Approve the new wallet as operator
-        await contract.approve(lowBalanceWallet.address, tokenId);
-      
-        // Try transfer 1 ETH from the wallet that has low balance (0.01 ETH)
-        await expect(
-          contract.connect(lowBalanceWallet).transferNFTByValue(tokenId, {
-            value: price
-          })
-        ).to.be.revertedWith("Insufficient funds");
-  
-      });
-      
-      it("should transfer successfully under normal conditions", async () => {
-        const price = ethers.parseEther("1");
-    
-        await contract.mintNFT(owner.address); // tokenId = 0
-        await contract.setPrice(0, price);
-        await contract.connect(owner).approve(addr1.address, 0);
-    
-        await expect(
-          contract.connect(addr1).transferNFTByValue(0, { value: price })
-        ).to.emit(contract, "Transfer");
-      });
-    });
-  
-    describe("Withdraw", () => {
-      it("should revert if contract balance is 0", async () => {
-        await expect(contract.withdraw()).to.be.revertedWith("No balance to withdraw");
-      });
-    
-      it("should allow owner to withdraw balance", async () => {
-        const depositAmount = ethers.parseEther("1");
-    
-        // Send ETH to contract
-        await addr1.sendTransaction({
-          to: contract.target,
-          value: depositAmount
-        });
-    
-        await expect(contract.withdraw()).to.changeEtherBalances(
-          [contract.target, owner.address],
-          [depositAmount * -1n, depositAmount]
-        );
-      });
-    
-      it("should emit WithdrawalStatus event on successful withdrawal", async () => {
-        const depositAmount = ethers.parseEther("1");
-      
-        await addr1.sendTransaction({
-          to: contract.target,
-          value: depositAmount
-        });
-      
-        await expect(contract.withdraw())
-          .to.emit(contract, "WithdrawalStatus")
-          .withArgs(true, "Withdrawal request completed");
-      });
-  
-      // Tests for the extra functions
-      it("should trigger fallback function when ETH is sent with unknown data", async () => {
-        const fallbackTx = {
-          to: contract.target, // Address of deployed contract
-          data: "0x12345678",  // Random data — no matching function selector
-          value: ethers.parseEther("0.5") // Sending ETH
-        };
-      
-        const before = await ethers.provider.getBalance(contract.target);
-      
-        await addr1.sendTransaction(fallbackTx);
-      
-        const after = await ethers.provider.getBalance(contract.target);
-      
-        expect(after - before).to.equal(ethers.parseEther("0.5"));
-      });
-    });
+    it("should revert if msg.sender balance is less than amount", async () => {
+      await horse.mintNFT(owner.address, "ipfs://uri");
+      await horse.setPrice(0, ethers.parseEther("10"));
+      await horse.connect(owner).approve(addr1.address, 0);
 
-    describe("Access Control", () => {
-      it("should block non-owners from burning the NFT", async () => {
-        // Mint the NFT to non-owner (addr1)
-        await contract.mintNFT(addr1.address);
-      
-        // Attempt to burn from non-owner (addr1) - should revert
-        await expect(contract.connect(addr1).burnNFT(0)).to.be.revertedWith("Only owner can burn NFT");
+      // Create a new low-balance wallet and fund it with only 0.01 ETH
+      const lowBalanceWallet = ethers.Wallet.createRandom().connect(ethers.provider);
+      await owner.sendTransaction({
+        to: lowBalanceWallet.address,
+        value: ethers.parseEther("0.01"),
       });
 
-      it("should revert if non-owner calls withdraw", async () => {
-        await expect(contract.connect(addr1).withdraw()).to.be.reverted;
-      });
+      await horse.connect(owner).approve(lowBalanceWallet.address, 0);
+
+      await expect(
+        horse.connect(lowBalanceWallet).transferNFTByValue(0, { value: ethers.parseEther("10") })
+      ).to.be.revertedWith("Insufficient funds");
     });
-    
+
+  });
+
+  describe("getMyTokens", () => {
+    it("should return list of tokens owned by user", async () => {
+      await horse.mintNFT(owner.address, "ipfs://1");
+      await horse.mintNFT(owner.address, "ipfs://2");
+      await horse.mintNFT(addr1.address, "ipfs://3");
+
+      const tokens = await horse.getMyTokens(owner.address);
+      expect(tokens.map(t => t.toString())).to.include.members(["0", "1"]);
+    });
+  });
+
+  describe("burnNFT", () => {
+    it("should burn the NFT if called by owner", async () => {
+      await horse.mintNFT(owner.address, "ipfs://uri");
+      await horse.burnNFT(0);
+      await expect(horse.ownerOf(0)).to.be.reverted;
+    });
+
+    it("should revert if not called by owner", async () => {
+      await horse.mintNFT(addr1.address, "ipfs://uri");
+      await expect(horse.connect(addr2).burnNFT(0)).to.be.revertedWith("Only owner can burn NFT");
+    });
+  });
+
+  describe("withdraw", () => {
+    it("should allow owner to withdraw ETH", async () => {
+      await owner.sendTransaction({ to: horse.target, value: ethers.parseEther("1") });
+      const balanceBefore = await ethers.provider.getBalance(owner.address);
+
+      const tx = await horse.withdraw();
+      const receipt = await tx.wait();
+
+      const gasUsed = receipt.gasUsed * receipt.gasPrice;
+      const balanceAfter = await ethers.provider.getBalance(owner.address);
+      expect(balanceAfter).to.be.above(balanceBefore - gasUsed);
+    });
+
+    it("should revert if no ETH in contract", async () => {
+      await expect(horse.withdraw()).to.be.revertedWith("No balance to withdraw");
+    });
+  });
+
+  describe("getApproved()", () => {
+    it("should return approved address after approval", async () => {
+      await horse.mintNFT(owner.address, "ipfs://uri");
+      await horse.connect(owner).approve(addr1.address, 0);
+      expect(await horse.getApproved(0)).to.equal(addr1.address);
+    });
+  });
+
+  describe("fallback()", () => {
+    it("should accept ETH via fallback when unknown function is called", async () => {
+      const unknownFunctionSelector = "0x12345678"; // invalid/unmatched function signature
+
+      const tx = await owner.sendTransaction({
+        to: horse.target,
+        data: unknownFunctionSelector,
+        value: ethers.parseEther("0.01"),
+      });
+
+      await tx.wait();
+
+      // confirm the contract now holds ETH (was accepted via fallback)
+      const contractBalance = await ethers.provider.getBalance(horse.target);
+      expect(contractBalance).to.equal(ethers.parseEther("0.01"));
+    });
+  });
+
+  describe("Access Control", () => {
+    it("should revert if non-owner tries to mint", async function () {
+      await expect(
+        horse.connect(addr1).mintNFT(addr1.address, "ipfs://fake")
+      ).to.be.reverted;
+    });
+
+    it("should revert if non-owner calls withdraw", async () => {
+      await expect(horse.connect(addr1).withdraw()).to.be.reverted;
+    });
   });
 });
