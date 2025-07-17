@@ -98,7 +98,7 @@ contract Horse is ERC721, Ownable {
 }
 
 // 0x5B38Da6a701c568545dCfcB03FcB875f56beddC4 -- Address 1 (Owner)
-// 0x5B38Da6a701c568545dCfcB03FcB875f56beddC4 -- Address 1 (Owner)
+// 00xAb8483F64d9C6d1EcF9b849Ae677dD3315835cb2 -- Address 1 (Owner)
 // 1000000000000000000 -- 0.01 ETH
 // ipfs://bafybeie4eqm7zgcp5ffgxvgf6xtgpdozsmexlecjmj2lcjcjw2x2rekune/0.json - full url
 // ipfs://bafybeie4eqm7zgcp5ffgxvgf6xtgpdozsmexlecjmj2lcjcjw2x2rekune/1.json - full url
