@@ -13,32 +13,6 @@ describe("Horse Contract Full Functionality", function () {
     await horse.waitForDeployment();
   });
 
-  // describe("Reentrancy Protection", function () {
-  //   it("should prevent reentrant call via modifier", async () => {
-  //     const Horse = await ethers.getContractFactory("Horse");
-  //     const horse = await Horse.deploy();
-  //     await horse.waitForDeployment();
-
-  //     const [owner, attacker] = await ethers.getSigners();
-
-  //     // Mint horse and set price
-  //     await horse.connect(owner).mintNFT(owner.address, "ipfs://test", { value: ethers.parseEther("0.01") });
-  //     await horse.setPrice(0, ethers.parseEther("1"));
-  //     await horse.connect(owner).approve(attacker.address, 0);
-
-  //     // Deploy malicious contract
-  //     const Malicious = await ethers.getContractFactory("ReentrantHorseBuyer");
-  //     const malicious = await Malicious.connect(attacker).deploy(horse.target);
-  //     await malicious.waitForDeployment();
-
-  //     // Fund malicious contract and try to attack
-  //     await expect(
-  //       malicious.connect(attacker).attack(0, { value: ethers.parseEther("1") })
-  //     ).to.be.revertedWith("No re-entrancy allowed");
-  //   });
-  // });
-
-
   describe("mintNFT", () => {
     it("should revert if sent value is less than 0.01 ETH", async function () {
       await expect(
@@ -63,8 +37,6 @@ describe("Horse Contract Full Functionality", function () {
         })
       ).to.be.revertedWith("Maximum horses reached");
     });
-
-
 
     it("should allow the owner to mint NFT with URI", async function () {
       const tokenURI = "ipfs://sample-uri-123";
