@@ -6,10 +6,10 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract Horse is ERC721, Ownable {
     uint256 public MAXIMUM_HORSES = 10;
-    mapping(uint256 => string) private _tokenURIs;
+    mapping(uint256 => string) private _horseURIs;
     mapping(uint256 => uint256) public priceList;
-    uint256 public totalSupply;
-    uint256 public tokenID;
+    uint256 public horses;
+    uint256 public nextHorseID;
     bool internal locked;
 
     // create event to get transfer status
@@ -17,7 +17,7 @@ contract Horse is ERC721, Ownable {
     event WithdrawalStatus(bool success, string message);
 
     constructor() ERC721("Horse", "HRS") Ownable(msg.sender) payable{
-        tokenID = 0;
+        nextHorseID = 0;
     }
 
     // Existing state, constructor, etc...
@@ -25,44 +25,51 @@ contract Horse is ERC721, Ownable {
 
     fallback() external payable {} // Optional: Accept ETH with data
 
-    function mintNFT(address _to, string memory uri) public payable onlyOwner {
+    function mintToken(address _to, string memory uri) public payable onlyOwner {
         require(msg.value >= 0.01 ether, "Insufficient funds to mint NFT");
-        require(tokenID + 1 < MAXIMUM_HORSES, "Maximum horses reached");
+        require(nextHorseID + 1 < MAXIMUM_HORSES, "Maximum horses reached");
 
-        _mint(_to, tokenID);
-        _tokenURIs[tokenID] = uri;
+        _mint(_to, nextHorseID);
+        _horseURIs[nextHorseID] = uri;
 
-        tokenID++;
-        totalSupply++;
+        setPrice(nextHorseID, msg.value); // Set initial price for the horse
+
+        nextHorseID++;
+        horses++;
     }
 
-    function setPrice(uint256 _tID, uint256 _price) public {
-        priceList[_tID] = _price;
+    function setPrice(uint256 _horseId, uint256 _price) public {
+        priceList[_horseId] = _price;
     }
 
-    function getPrice(uint256 _tID) public view returns (uint256) {
-        return priceList[_tID];
+    function getPrice(uint256 _horseId) public view returns (uint256) {
+        return priceList[_horseId];
     }
     
-    function setTokenURI(uint256 tokenId, string memory _uri) public {
-        require(ownerOf(tokenId) == msg.sender, "Only owner can set token URI");
-        _tokenURIs[tokenId] = _uri;
+    function setHorseURI(uint256 _horseID, string memory _uri) public {
+        require(ownerOf(_horseID) == msg.sender, "Only owner can set token URI");
+        _horseURIs[_horseID] = _uri;
     }
 
-    function tokenURI(uint256 tokenId) public view override returns (string memory) {
-        // require(_exists(tokenId), "ERC721Metadata: URI query for nonexistent token");
-        return _tokenURIs[tokenId];
+    function approve(address to, uint256 _horseId) public override {
+        require(to != address(0), "Cannot approve zero address");
+        require(ownerOf(_horseId) == msg.sender, "Only owner can approve");
+        super.approve(to, _horseId);
     }
 
-    function transferNFT(uint256 tokenId) payable external {
-        require(msg.value >= getPrice(tokenId), "Insufficient funds to transfer NFT");
-        address owner = payable (ownerOf(tokenId));
+    function tokenURI(uint256 _horseID) public view override returns (string memory) {
+        return _horseURIs[_horseID];
+    }
+
+    function transferHorse(uint256 _horseID) payable external {
+        require(msg.value >= getPrice(_horseID), "Insufficient funds to transfer NFT");
+        address owner = payable (ownerOf(_horseID));
 
         (bool status, ) = owner.call{value: msg.value}("");
         // require(status, "Transfer failed");
 
         // Transfer ownership of the NFT
-        safeTransferFrom(owner, _msgSender(), tokenId);
+        safeTransferFrom(owner, _msgSender(), _horseID);
         emit TransferStatus(status, "Direct NFT transfer completed");
     }
 
@@ -70,7 +77,7 @@ contract Horse is ERC721, Ownable {
         uint256 count = balanceOf(_owner);
         uint256[] memory result = new uint256[](count);
         uint256 index = 0;
-        for (uint256 i = 0; i < tokenID; i++) {
+        for (uint256 i = 0; i < nextHorseID; i++) {
             if (ownerOf(i) == _owner) {
                 result[index++] = i;
             }
@@ -79,9 +86,9 @@ contract Horse is ERC721, Ownable {
     }
 
 
-    function burnNFT(uint256 _tokenID) public {
-        require(ownerOf(_tokenID) == msg.sender, "Only owner can burn NFT");
-        _burn(_tokenID);
+    function burnToken(uint256 _horseID) public {
+        require(ownerOf(_horseID) == msg.sender, "Only owner can burn NFT");
+        _burn(_horseID);
     }
 
     function withdraw() external payable onlyOwner {
@@ -100,5 +107,6 @@ contract Horse is ERC721, Ownable {
 // 0x5B38Da6a701c568545dCfcB03FcB875f56beddC4 -- Address 1 (Owner)
 // 0xAb8483F64d9C6d1EcF9b849Ae677dD3315835cb2 -- Address 1 (Owner)
 // 1000000000000000000 -- 0.01 ETH
+// 2000000000000000000 -- 0.01 ETH
 // ipfs://bafybeie4eqm7zgcp5ffgxvgf6xtgpdozsmexlecjmj2lcjcjw2x2rekune/0.json - full url
 // ipfs://bafybeie4eqm7zgcp5ffgxvgf6xtgpdozsmexlecjmj2lcjcjw2x2rekune/1.json - full url
