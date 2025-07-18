@@ -6,10 +6,10 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract Horse is ERC721, Ownable {
     uint256 public MAXIMUM_HORSES = 10;
-    mapping(uint256 => string) private _horseURIs;
+    mapping(uint256 => string) private _tokenURIs;
     mapping(uint256 => uint256) public priceList;
-    uint256 public horses;
-    uint256 public nextHorseID;
+    uint256 public totalSupply;
+    uint256 public nextTokenID;
     bool internal locked;
 
     // create event to get transfer status
@@ -17,7 +17,7 @@ contract Horse is ERC721, Ownable {
     event WithdrawalStatus(bool success, string message);
 
     constructor() ERC721("Horse", "HRS") Ownable(msg.sender) payable{
-        nextHorseID = 0;
+        nextTokenID = 0;
     }
 
     // Existing state, constructor, etc...
@@ -26,58 +26,58 @@ contract Horse is ERC721, Ownable {
     fallback() external payable {} // Optional: Accept ETH with data
 
     function mintToken(address _to, string memory uri) public payable onlyOwner {
-        require(msg.value >= 0.01 ether, "Insufficient funds to mint NFT");
-        require(nextHorseID + 1 < MAXIMUM_HORSES, "Maximum horses reached");
+        require(msg.value >= 0.01 ether, "Insufficient funds to mint Token");
+        require(nextTokenID + 1 < MAXIMUM_HORSES, "Maximum tokens reached");
 
-        _mint(_to, nextHorseID);
-        _horseURIs[nextHorseID] = uri;
+        _mint(_to, nextTokenID);
+        _tokenURIs[nextTokenID] = uri;
 
-        setPrice(nextHorseID, msg.value); // Set initial price for the horse
+        setPrice(nextTokenID, msg.value); // Set initial price for the horse
 
-        nextHorseID++;
-        horses++;
+        nextTokenID++;
+        totalSupply++;
     }
 
-    function setPrice(uint256 _horseId, uint256 _price) public {
-        priceList[_horseId] = _price;
+    function setPrice(uint256 _tokenId, uint256 _price) public {
+        priceList[_tokenId] = _price;
     }
 
-    function getPrice(uint256 _horseId) public view returns (uint256) {
-        return priceList[_horseId];
+    function getPrice(uint256 _tokenId) public view returns (uint256) {
+        return priceList[_tokenId];
     }
     
-    function setHorseURI(uint256 _horseID, string memory _uri) public {
-        require(ownerOf(_horseID) == msg.sender, "Only owner can set token URI");
-        _horseURIs[_horseID] = _uri;
+    function setHorseURI(uint256 _tokenId, string memory _uri) public {
+        require(ownerOf(_tokenId) == msg.sender, "Only owner can set token URI");
+        _tokenURIs[_tokenId] = _uri;
     }
 
-    function approve(address to, uint256 _horseId) public override {
+    function approve(address to, uint256 _tokenId) public override {
         require(to != address(0), "Cannot approve zero address");
-        require(ownerOf(_horseId) == msg.sender, "Only owner can approve");
-        super.approve(to, _horseId);
+        require(ownerOf(_tokenId) == msg.sender, "Only owner can approve");
+        super.approve(to, _tokenId);
     }
 
-    function tokenURI(uint256 _horseID) public view override returns (string memory) {
-        return _horseURIs[_horseID];
+    function tokenURI(uint256 _tokenId) public view override returns (string memory) {
+        return _tokenURIs[_tokenId];
     }
 
-    function transferHorse(uint256 _horseID) payable external {
-        require(msg.value >= getPrice(_horseID), "Insufficient funds to transfer NFT");
-        address owner = payable (ownerOf(_horseID));
+    function transferHorse(uint256 _tokenId) payable external {
+        require(msg.value >= getPrice(_tokenId), "Insufficient funds to transfer tokens");
+        address owner = payable (ownerOf(_tokenId));
 
         (bool status, ) = owner.call{value: msg.value}("");
         // require(status, "Transfer failed");
 
         // Transfer ownership of the NFT
-        safeTransferFrom(owner, _msgSender(), _horseID);
-        emit TransferStatus(status, "Direct NFT transfer completed");
+        safeTransferFrom(owner, _msgSender(), _tokenId);
+        emit TransferStatus(status, "Direct token transfer completed");
     }
 
     function getMyTokens(address _owner) external view returns (uint256[] memory) {
         uint256 count = balanceOf(_owner);
         uint256[] memory result = new uint256[](count);
         uint256 index = 0;
-        for (uint256 i = 0; i < nextHorseID; i++) {
+        for (uint256 i = 0; i < nextTokenID; i++) {
             if (ownerOf(i) == _owner) {
                 result[index++] = i;
             }
@@ -86,9 +86,9 @@ contract Horse is ERC721, Ownable {
     }
 
 
-    function burnToken(uint256 _horseID) public {
-        require(ownerOf(_horseID) == msg.sender, "Only owner can burn NFT");
-        _burn(_horseID);
+    function burnToken(uint256 _tokenId) public {
+        require(ownerOf(_tokenId) == msg.sender, "Only owner can burn tokens");
+        _burn(_tokenId);
     }
 
     function withdraw() external payable onlyOwner {

@@ -19,7 +19,7 @@ describe("Horse Contract Full Functionality", function () {
         horse.connect(owner).mintToken(addr1.address, "ipfs://too-cheap", {
           value: ethers.parseEther("0.005"),
         })
-      ).to.be.revertedWith("Insufficient funds to mint NFT");
+      ).to.be.revertedWith("Insufficient funds to mint Token");
     });
 
     it("should revert if maximum horses limit is reached", async function () {
@@ -35,7 +35,7 @@ describe("Horse Contract Full Functionality", function () {
         horse.connect(owner).mintToken(owner.address, "ipfs://overflow", {
           value: ethers.parseEther("0.01"),
         })
-      ).to.be.revertedWith("Maximum horses reached");
+      ).to.be.revertedWith("Maximum tokens reached");
     });
 
     it("should allow the owner to mint NFT with URI", async function () {
@@ -47,7 +47,7 @@ describe("Horse Contract Full Functionality", function () {
 
       expect(await horse.ownerOf(0)).to.equal(addr1.address);
       expect(await horse.tokenURI(0)).to.equal(tokenURI);
-      expect(await horse.horses()).to.equal(1);
+      expect(await horse.totalSupply()).to.equal(1);
     });
 
     it("should revert if non-owner tries to mint", async function () {
@@ -56,12 +56,12 @@ describe("Horse Contract Full Functionality", function () {
       ).to.be.revertedWithCustomError(horse, "OwnableUnauthorizedAccount");
     });
 
-    it("should increment nextHorseID and horses after each mint", async function () {
+    it("should increment nextTokenID and horses after each mint", async function () {
       await horse.connect(owner).mintToken(owner.address, "ipfs://a", { value: ethers.parseEther("0.01") });
       await horse.connect(owner).mintToken(addr1.address, "ipfs://b", { value: ethers.parseEther("0.01") });
 
-      expect(await horse.nextHorseID()).to.equal(2);
-      expect(await horse.horses()).to.equal(2);
+      expect(await horse.nextTokenID()).to.equal(2);
+      expect(await horse.totalSupply()).to.equal(2);
     });
   });
 
@@ -140,7 +140,7 @@ describe("Horse Contract Full Functionality", function () {
         horse.connect(addr2).transferHorse(0, { value: ethers.parseEther("1") })
       )
         .to.emit(horse, "TransferStatus")
-        .withArgs(true, "Direct NFT transfer completed");
+        .withArgs(true, "Direct token transfer completed");
 
       // Assert ownership
       expect(await horse.ownerOf(0)).to.equal(addr2.address);
@@ -156,7 +156,7 @@ describe("Horse Contract Full Functionality", function () {
 
       await expect(
         horse.connect(addr2).transferHorse(0, { value: ethers.parseEther("0.5") })
-      ).to.be.revertedWith("Insufficient funds to transfer NFT");
+      ).to.be.revertedWith("Insufficient funds to transfer tokens");
     });
 
 
@@ -183,7 +183,7 @@ describe("Horse Contract Full Functionality", function () {
 
     it("should revert if not called by owner", async () => {
       await horse.mintToken(addr1.address, "ipfs://uri", { value: ethers.parseEther("0.01") });
-      await expect(horse.connect(addr2).burnToken(0)).to.be.revertedWith("Only owner can burn NFT");
+      await expect(horse.connect(addr2).burnToken(0)).to.be.revertedWith("Only owner can burn tokens");
     });
   });
 
